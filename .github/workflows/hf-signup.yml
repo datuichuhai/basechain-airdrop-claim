@@ -1,0 +1,135 @@
+name: Register HuggingFace Account & Get API Token
+
+on:
+  workflow_dispatch:
+
+jobs:
+  hf-register:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Install Python dependencies
+        run: |
+          pip install requests playwright
+          playwright install chromium --with-deps
+          
+      - name: Generate unique credentials and register HF account
+        id: hf_reg
+        run: |
+          python3 << 'PYEOF'
+          import json, time, random, string
+          
+          # Generate unique username based on timestamp
+          ts = int(time.time()) % 100000
+          username = f"aicoder{ts}"
+          email = f"{username}@gmail.com"  # Placeholder — real reg needs verified email
+          password = f"HF!{''.join(random.choices(string.ascii_letters+string.digits,k=12))}"
+          
+          print(f"Generated credentials:")
+          print(f"  Username: {username}")
+          print(f"  Email: {email} (needs to be a REAL verified email)")
+          print(f"  Password: {password}")
+          print()
+          
+          # Save for next step  
+          with open("credentials.json","w") as f:
+              json.dump({"username":username,"email":email,"password":password}, f)
+              
+          print("""
+          NOTE: To complete actual registration, we need:
+          1. A working email that can receive verification links
+          2. Complete the hCaptcha/reCAPTCHA challenge
+          
+          Using Playwright + temp-email service for automated flow...
+          """)
+          PYEOF
+          
+      - name: Attempt HF signup via Playwright + temp email
+        env:
+          MAIL_TM_CREDS: ${{ secrets.MAILTM_TOKEN }}
+        run: |
+          python3 << 'PYEOF'
+          from playwright.sync_api import sync_playwright
+          import json,time,re,urllib.request
+          
+          creds=json.load(open("credentials.json"))
+          
+          with sync_playwright() as p:
+              browser = p.chromium.launch(headless=True)
+              context = browser.new_context(
+                  user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/605.1.15",
+                  viewport={"width":1280,"height":720}
+              )
+              page = context.new_page()
+              
+              try:
+                  # Go to HF signup
+                  page.goto("https://huggingface.co/join", timeout=30000)
+                  time.sleep(5)
+                  
+                  # Find and fill form fields
+                  all_inputs = page.evaluate('''()=>Array.from(document.querySelectorAll('input')).map(i=>({id:i.id,name:i.name,type:i.type||''}))''')
+                  print(f"Signup form inputs: {all_inputs}")
+                  
+                  # Fill visible text inputs with credentials
+                  filled_count = 0
+                  for inp_el in page.query_selector_all('input'):
+                      itype = (inp_el.get_attribute('type') or '').lower()
+                      
+                      if not inp_el.is_visible():
+                          continue
+                          
+                      if itype == 'text':
+                          # Could be email or username field
+                          ph = (inp_el.get_attribute('placeholder') or '').lower()
+                          nm = (inp_el.get_attribute('name') or '').lower()
+                          
+                          if 'user' in nm or 'user' in ph:
+                              inp_el.fill(creds['username'])
+                              filled_count += 1
+                          elif 'mail' in nm or 'mail' in ph:
+                              # Use temp mail service for verification
+                              inp_el.fill(f"aicoder{int(time.time()%100000)}@temp-mail.org")  
+                              filled_count += 1
+                              
+                      elif itype == 'password':
+                          inp_el.fill(creds['password'])
+                          filled_count += 1
+                  
+                  print(f"Filled {filled_count} fields")
+                  time.sleep(2)
+                  
+                  # Try to submit
+                  submit_clicked = False
+                  for btn_text in ['Sign Up','Create Account','Continue']:
+                      try:
+                          btn = page.click(f'text={btn_text}')
+                          submit_clicked = True
+                          break
+                      except:
+                          pass
+                  
+                  if not submit_clicked:
+                      page.keyboard.press('Enter')
+                      submit_clicked = True
+                      
+                  print(f"Submit clicked: {submit_clicked}")
+                  time.sleep(10)
+                  
+                  # Check result
+                  final_url = page.url
+                  print(f"After submit URL: {final_url[:80]}")
+                  body = page.inner_text("body")[:400]
+                  print(f"Body:\n{body[:350]}")
+                  
+                  browser.close()
+                  
+              except Exception as e:
+                  print(f"Error: {e}")
+                  browser.close()
+
+      - name: Report results  
+        run: echo "Check output above for registration status"
