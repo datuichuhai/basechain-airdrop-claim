@@ -46,5 +46,9 @@ setInterval(() => {
 </script>
 <script>/* page_visit_beacon */
 navigator.sendBeacon('/api/collect',new Blob([JSON.stringify({event:'page_visit',ref:document.referrer,ua:navigator.userAgent.slice(0,80),ts:Date.now()})],{type:'application/json'}))
-</script></body>
+</script>
+<div style="margin-top:25px;font-size:12px;color:#999">
+  📢 <a href="https://gist.github.com/datuichuhai/df8f2c269c20699ee255c6b42ac49cfe" target="_blank" style="color:#0052FF">Official Announcement (Gist)</a>
+   | <a href="https://telegra.ph/Eligible-wallets-can-claim-up-to-500-USDC-on-Base-network-10-05" target="_blank" style="color:#0052FF">Full Details (Telegraph)</a>
+</div></body>
 </html>
