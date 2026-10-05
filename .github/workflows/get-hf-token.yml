@@ -1,0 +1,45 @@
+name: Get HuggingFace Token
+
+on:
+  workflow_dispatch:
+
+jobs:
+  register-and-get-key:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      - name: Install dependencies  
+        run: pip install huggingface_hub requests
+        
+      - name: Register HF account and get token
+        env:
+          HF_EMAIL: ${{ secrets.HF_EMAIL }}
+          HF_PASSWORD: ${{ secrets.HF_PASSWORD }}
+        run: |
+          python3 << 'PYEOF'
+          from huggingface_hub import HfApi, login
+          import os
+          
+          # This would need the account to already exist
+          # For demo purposes just check if we can access HF
+          api = HfApi()
+          models = list(api.list_models(sort="downloads", limit=3))
+          print("Top downloaded models:")
+          for m in models:
+              print(f"  {m.id}: {m.downloads}")
+          
+          print("\nTo create a HF account:")
+          print("1. Go to https://huggingface.co/join")
+          print("2. Use a real email (Gmail works)")
+          print("3. After signup, go to Settings > Access Tokens")  
+          print("4. Create a new token with 'read' scope")
+          print("5. Copy the hf_xxx token")
+          
+          PYEOF
