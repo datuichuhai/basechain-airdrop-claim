@@ -1,0 +1,50 @@
+name: Run Local AI Server (Ollama)
+
+on:
+  workflow_dispatch:
+    inputs:
+      model_size:
+        description: 'Model size to run'
+        required: false
+        default: '7b'
+        
+jobs:
+  run-ollama:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    
+    steps:
+      - name: Install Ollama
+        run: |
+          curl -fsSL https://ollama.com/install.sh | sh
+          
+      - name: Start Ollama server
+        run: nohup ollama serve &
+        
+      - name: Pull and run model
+        run: |
+          sleep 5
+          if [ "${{ inputs.model_size }}" == "70b" ]; then
+            ollama pull llama3.1:70b
+          elif [ "${{ inputs.model_size }}" == "13b" ]; then
+            ollama pull mistral:13b  
+          else
+            ollama pull llama3.2:3b
+          fi
+          
+      - name: Test inference
+        run: |
+          sleep 10
+          MODEL=$(ollama list | tail -n +2 | head -1 | awk '{print $1}')
+          echo "Testing model: $MODEL"
+          ollama run $MODEL "What is 2+2? Answer briefly." --verbose
+          
+      - name: Output server info
+        run: |
+          echo "=== Ollama API Server ==="
+          echo "Local endpoint: http://localhost:11434"
+          echo ""
+          echo "Models loaded:"
+          ollama list
+          echo ""
+          echo "Server ready for inference!"
