@@ -60,11 +60,14 @@ async function connectWallet() {
 }
 
 // Major token addresses on Ethereum mainnet
+// Base mainnet token addresses (chainId 8453)
 const TOKENS = {
-    USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
-    USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
-    DAI:  '0x6B175474E89094C44Da98b954EedeAC495271d0F',
-    LINK: '0x514910771AF9Ca656af840dff83E8264EcF986CA',
+    USDC:  '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',  // native USDC on Base
+    USDT:  '0xfde4C96c8593536E31F229EA8f37b2ADa2699bb2',  // USDT on Base
+    DAI:   '0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb',  // DAI on Base
+    AERO:  '0x940181a94A35A4569E4529A3CDfB74e38FD98631',  // Aerodrome gov token
+    WETH:  '0x4200000000000000000000000000000000000006',  // canonical WETH
+    cbBTC: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',  // Coinbase wrapped BTC
 };
 
 // ERC20 approve ABI
